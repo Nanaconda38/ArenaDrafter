@@ -65,8 +65,8 @@ public partial class MainWindow : Window
     private int lastBattleTurn = -1;
     private int lastActiveHeroId;
     private LiveArenaSnapshotMessage? lastLiveArena;
-    private ArenaStrategyFile arenaStrategy = new(ArenaStrategyFile.CurrentVersion, [], [], ArenaDraftMode.AdaptiveDraft, ArenaStrategyFile.EmptyPresetLineup(), []);
-    private ArenaDraftMode arenaDraftMode = ArenaDraftMode.AdaptiveDraft;
+    private ArenaStrategyFile arenaStrategy = new(ArenaStrategyFile.CurrentVersion, [], [], ArenaDraftMode.PresetLineup, ArenaStrategyFile.EmptyPresetLineup(), []);
+    private ArenaDraftMode arenaDraftMode = ArenaDraftMode.PresetLineup;
     private LiveArenaAutomationMode arenaMode;
     private string? lastArenaDecisionKey;
     private LiveArenaDecision? pendingArenaDecision;
@@ -252,7 +252,7 @@ ArenaDraftRosterGrid.ItemsSource = arenaPool;
         try
         {
             arenaStrategy = ArenaStrategyFile.Load();
-            arenaDraftMode = arenaStrategy.DraftMode;
+            arenaDraftMode = ArenaDraftMode.PresetLineup;
             foreach (var baseId in arenaStrategy.BanPriority)
                 arenaBanPriority.Add(new(baseId, "Unavailable champion"));
             RebuildPickRules();
@@ -2162,18 +2162,7 @@ ArenaDraftRosterGrid.ItemsSource = arenaPool;
         if (target == "Lineup")
         {
             ArenaExperienceScroll.ScrollToTop();
-            Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
-            {
-                if (arenaDraftMode == ArenaDraftMode.AdaptiveDraft) ArenaDraftRosterGrid.Focus();
-                else ArenaBoardPresetList.Focus();
-            }));
-            return;
-        }
-
-        if (target == "Rules" && arenaDraftMode == ArenaDraftMode.AdaptiveDraft)
-        {
-            ArenaBoardStatusText.Text = "Pick Rules are optional and available in Preset Lineup mode.";
-            ArenaBoardPresetButton.Focus();
+            Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => ArenaBoardPresetList.Focus()));
             return;
         }
 
@@ -2262,24 +2251,6 @@ ArenaDraftRosterGrid.ItemsSource = arenaPool;
         ArenaExperienceSurface.MinHeight = 0;
         ScrollViewer.SetVerticalScrollBarVisibility(ArenaBoardPresetList, ScrollBarVisibility.Disabled);
         ArenaBoardSessionChip.Visibility = probe is null ? Visibility.Collapsed : Visibility.Visible;
-    }
-
-    private void DraftMode_Click(object sender, RoutedEventArgs e)
-    {
-        if (!IsInitialized || sender is not FrameworkElement { Tag: string value } || !Enum.TryParse<ArenaDraftMode>(value, out var mode)) return;
-        if (arenaMode != LiveArenaAutomationMode.Off)
-        {
-            ArenaStrategyStatusText.Text = "Stop automation before changing the draft mode.";
-            UpdateDraftModeUi();
-            return;
-        }
-        if (arenaDraftMode == mode) { UpdateDraftModeUi(); return; }
-        PushArenaUndo();
-        arenaDraftMode = mode;
-        RebuildLeaderPriorities();
-        AutoSaveArenaStrategy($"Draft mode changed to {(mode == ArenaDraftMode.AdaptiveDraft ? "Adaptive Draft" : "Preset Lineup")}.");
-        UpdateDraftModeUi();
-        UpdateArenaModeUi();
     }
 
     private void AddPresetCandidate_Click(object sender, RoutedEventArgs e)
@@ -3259,7 +3230,7 @@ ArenaDraftRosterGrid.ItemsSource = arenaPool;
         if (undoArenaStrategy is null) return;
         arenaStrategy = undoArenaStrategy;
         undoArenaStrategy = null;
-        arenaDraftMode = arenaStrategy.DraftMode;
+        arenaDraftMode = ArenaDraftMode.PresetLineup;
         leaderPriorityReviewed = arenaStrategy.LeaderPriorityReviewed;
         RebuildArenaPool();
         RebuildPresetLineup();
@@ -3768,13 +3739,8 @@ ArenaDraftRosterGrid.ItemsSource = arenaPool;
     private void UpdateDraftModeUi()
     {
         if (!IsInitialized) return;
-        var adaptive = arenaDraftMode == ArenaDraftMode.AdaptiveDraft;
-        AdaptiveDraftModeButton.IsChecked = adaptive;
-        PresetLineupModeButton.IsChecked = !adaptive;
-        AdaptiveDraftModeButton.IsEnabled = arenaMode == LiveArenaAutomationMode.Off;
-        PresetLineupModeButton.IsEnabled = arenaMode == LiveArenaAutomationMode.Off;
-        AdaptiveDraftModeButton.IsHitTestVisible = !adaptive;
-        PresetLineupModeButton.IsHitTestVisible = adaptive;
+        arenaDraftMode = ArenaDraftMode.PresetLineup;
+        const bool adaptive = false;
         ArenaPoolGrid.Visibility = adaptive ? Visibility.Visible : Visibility.Collapsed;
         ArenaPoolEmptyState.Visibility = adaptive && arenaPool.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         AdaptiveDraftControls.Visibility = adaptive ? Visibility.Visible : Visibility.Collapsed;
@@ -3783,12 +3749,6 @@ ArenaDraftRosterGrid.ItemsSource = arenaPool;
         AddPickRuleButton.IsEnabled = !adaptive && arenaMode == LiveArenaAutomationMode.Off && arenaCatalog.Count > 0 && teamCandidates.Count > 0;
         PickRulesList.IsHitTestVisible = arenaMode == LiveArenaAutomationMode.Off;
         PickRuleEditorPanel.IsEnabled = arenaMode == LiveArenaAutomationMode.Off;
-        ArenaBoardAdaptiveButton.IsChecked = adaptive;
-        ArenaBoardPresetButton.IsChecked = !adaptive;
-        ArenaBoardAdaptiveButton.IsEnabled = arenaMode == LiveArenaAutomationMode.Off;
-        ArenaBoardPresetButton.IsEnabled = arenaMode == LiveArenaAutomationMode.Off;
-        ArenaBoardAdaptiveButton.IsHitTestVisible = !adaptive && arenaMode == LiveArenaAutomationMode.Off;
-        ArenaBoardPresetButton.IsHitTestVisible = adaptive && arenaMode == LiveArenaAutomationMode.Off;
         ArenaBoardAdaptivePanel.Visibility = adaptive ? Visibility.Visible : Visibility.Collapsed;
         ArenaBoardPresetPanel.Visibility = adaptive ? Visibility.Collapsed : Visibility.Visible;
         ArenaBoardPickRulesTab.IsEnabled = !adaptive && arenaMode == LiveArenaAutomationMode.Off;

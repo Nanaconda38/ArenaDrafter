@@ -65,7 +65,7 @@ public sealed record ArenaStrategyFile(
     public static ArenaStrategyFile Load()
     {
         Directory.CreateDirectory(AppPaths.Data);
-        if (!File.Exists(Path)) return new(CurrentVersion, [], [], ArenaDraftMode.AdaptiveDraft, EmptyPresetLineup(), [], []);
+        if (!File.Exists(Path)) return new(CurrentVersion, [], [], ArenaDraftMode.PresetLineup, EmptyPresetLineup(), [], []);
         return Parse(File.ReadAllText(Path));
     }
 
@@ -74,12 +74,13 @@ public sealed record ArenaStrategyFile(
         var strategy = JsonSerializer.Deserialize<ArenaStrategyFile>(json)
             ?? throw new InvalidDataException("The Live Arena strategy file is empty.");
         if (strategy.Version == 1)
-            strategy = new(CurrentVersion, strategy.Pool, strategy.BanPriority, ArenaDraftMode.AdaptiveDraft, EmptyPresetLineup(),
+            strategy = new(CurrentVersion, strategy.Pool, strategy.BanPriority, ArenaDraftMode.PresetLineup, EmptyPresetLineup(),
                 strategy.Pool.OrderBy(candidate => candidate.LeaderPriority).Select(candidate => candidate.BaseId).ToList(), []);
         else if (strategy.Version == 2)
             strategy = strategy with
             {
                 Version = CurrentVersion,
+                DraftMode = ArenaDraftMode.PresetLineup,
                 PresetLineup = strategy.PresetLineup ?? EmptyPresetLineup(),
                 LeaderPriority = strategy.LeaderPriority ?? strategy.Pool.OrderBy(candidate => candidate.LeaderPriority).Select(candidate => candidate.BaseId).ToList(),
                 PickRules = []
@@ -87,6 +88,7 @@ public sealed record ArenaStrategyFile(
         else
             strategy = strategy with
             {
+                DraftMode = ArenaDraftMode.PresetLineup,
                 PresetLineup = strategy.PresetLineup ?? EmptyPresetLineup(),
                 LeaderPriority = strategy.LeaderPriority ?? strategy.Pool.OrderBy(candidate => candidate.LeaderPriority).Select(candidate => candidate.BaseId).ToList(),
                 PickRules = strategy.PickRules ?? []

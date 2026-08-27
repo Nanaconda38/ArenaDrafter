@@ -494,11 +494,10 @@
                                 <TextBlock Margin="0,2,0,0" Foreground="{StaticResource MutedBrush}" FontSize="12" Text="Configure once, then let the continuous session handle every match."/>
                             </StackPanel>
                             <WrapPanel x:Name="ArenaHeaderTools" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Top">
-                                <Border Margin="0,0,10,0" Background="#172129" BorderBrush="#273842" BorderThickness="1" CornerRadius="6" Padding="5">
+                                <Border Margin="0,0,10,0" Background="#172129" BorderBrush="#273842" BorderThickness="1" CornerRadius="6" Padding="10,6">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Margin="5,0,8,0" VerticalAlignment="Center" Foreground="#96A6AA" FontSize="12" FontWeight="Bold" Text="DRAFT MODE"/>
-                                        <ToggleButton x:Name="AdaptiveDraftModeButton" MinWidth="112" Padding="9,4" Content="Adaptive Draft" Click="DraftMode_Click" Tag="AdaptiveDraft"/>
-                                        <ToggleButton x:Name="PresetLineupModeButton" MinWidth="112" Margin="4,0,0,0" Padding="9,4" Content="Preset Lineup" Click="DraftMode_Click" Tag="PresetLineup"/>
+                                        <TextBlock Margin="0,0,8,0" VerticalAlignment="Center" Foreground="#96A6AA" FontSize="12" FontWeight="Bold" Text="STRATEGY"/>
+                                        <TextBlock VerticalAlignment="Center" Foreground="#D2A84D" FontWeight="SemiBold" Text="PRESET LINEUP"/>
                                     </StackPanel>
                                 </Border>
                                 <Border x:Name="ArenaRulesPanel" Background="#172129" BorderBrush="#4FB3A8" BorderThickness="1" CornerRadius="12" Padding="10,4" Visibility="Collapsed">
@@ -906,11 +905,10 @@
                                 <TextBlock Margin="0,3,0,0" Foreground="{StaticResource MutedBrush}" Text="Build the five-step draft plan, then let the verified session execute it."/>
                             </StackPanel>
                             <WrapPanel x:Name="ArenaBoardHeaderTools" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Top">
-                                <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="6" Padding="6" Margin="0,0,8,0">
+                                <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="6" Padding="10,7" Margin="0,0,8,0">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Margin="4,0,9,0" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" FontSize="12" FontWeight="Bold" Text="STRATEGY"/>
-                                        <ToggleButton x:Name="ArenaBoardAdaptiveButton" Style="{StaticResource ArenaModeToggle}" Tag="AdaptiveDraft" Content="Adaptive Draft" Click="DraftMode_Click" Padding="10,6"/>
-                                        <ToggleButton x:Name="ArenaBoardPresetButton" Style="{StaticResource ArenaModeToggle}" Tag="PresetLineup" Content="Preset Lineup" Click="DraftMode_Click" Padding="10,6" Margin="4,0,0,0"/>
+                                        <TextBlock VerticalAlignment="Center" Foreground="{StaticResource GoldBrush}" FontWeight="SemiBold" Text="PRESET LINEUP"/>
                                     </StackPanel>
                                 </Border>
                                 <Border x:Name="ArenaBoardSessionChip" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="6" Padding="10,7" Margin="0,0,8,0">

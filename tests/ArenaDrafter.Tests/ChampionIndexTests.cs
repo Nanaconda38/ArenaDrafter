@@ -344,14 +344,14 @@ public sealed class ChampionIndexTests
     }
 
     [TestMethod]
-    public void VersionTwoStrategyMigratesToEmptyPickRules()
+    public void VersionTwoAdaptiveStrategyMigratesToPresetAndEmptyPickRules()
     {
         var json = JsonSerializer.Serialize(new
         {
             Version = 2,
             Pool = Array.Empty<ArenaStrategyCandidate>(),
             BanPriority = Array.Empty<int>(),
-            DraftMode = ArenaDraftMode.PresetLineup,
+            DraftMode = ArenaDraftMode.AdaptiveDraft,
             PresetLineup = PresetSlots(),
             LeaderPriority = Array.Empty<int>()
         });
@@ -378,7 +378,7 @@ public sealed class ChampionIndexTests
     }
 
     [TestMethod]
-    public void LegacyAdaptiveStrategyMigratesWithoutLosingPriorities()
+    public void LegacyAdaptiveStrategyMigratesToPresetWithoutLosingPriorities()
     {
         var pool = new List<ArenaStrategyCandidate>
         {
@@ -390,7 +390,8 @@ public sealed class ChampionIndexTests
         var migrated = ArenaStrategyFile.Parse(legacyJson);
 
         Assert.AreEqual(ArenaStrategyFile.CurrentVersion, migrated.Version);
-        Assert.AreEqual(ArenaDraftMode.AdaptiveDraft, migrated.DraftMode);
+        Assert.AreEqual(ArenaDraftMode.PresetLineup, migrated.DraftMode,
+            "The distribution build must never expose the unfinished Adaptive Draft mode.");
         Assert.AreEqual(5, migrated.PresetLineup?.Count);
         CollectionAssert.AreEqual(new[] { 1002, 1001 }, migrated.LeaderPriority);
         CollectionAssert.AreEqual(new[] { 5001 }, migrated.BanPriority);
