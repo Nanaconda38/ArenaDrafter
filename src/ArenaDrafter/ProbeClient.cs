@@ -8,7 +8,7 @@ using System.Buffers.Binary;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
-namespace RslArenaResearch;
+namespace ArenaDrafter;
 
 public sealed class ProbeClient : IAsyncDisposable
 {
@@ -32,7 +32,7 @@ public sealed class ProbeClient : IAsyncDisposable
         var user = WindowsIdentity.GetCurrent().User ?? throw new InvalidOperationException("The current Windows user SID is unavailable.");
         var security = new PipeSecurity();
         security.SetSecurityDescriptorSddlForm($"D:P(A;;GA;;;{user.Value})", AccessControlSections.Access);
-        pipe = NamedPipeServerStreamAcl.Create($"RslArenaResearch-{processId}", PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 4096, 4096, security);
+        pipe = NamedPipeServerStreamAcl.Create($"ArenaDrafter-{processId}", PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 4096, 4096, security);
         SetMediumIntegrity(pipe);
         Log.Info($"Named pipe ACL limited to SID {user.Value} with medium integrity access.");
     }

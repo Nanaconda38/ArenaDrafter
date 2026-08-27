@@ -1,5 +1,5 @@
 param(
-    [string]$OutputPath = (Join-Path $PSScriptRoot '..\src\RslArenaResearch\Data\hellhades-arena-catalog.json')
+    [string]$OutputPath = (Join-Path $PSScriptRoot '..\src\ArenaDrafter\Data\hellhades-arena-catalog.json')
 )
 
 $ErrorActionPreference = 'Stop'

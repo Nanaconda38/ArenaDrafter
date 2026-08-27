@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace RslArenaResearch;
+namespace ArenaDrafter;
 
 public sealed class ArenaDraftSimulator
 {

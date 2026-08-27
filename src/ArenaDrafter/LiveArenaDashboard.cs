@@ -1,7 +1,7 @@
 using System.IO;
 using System.Text.Json;
 
-namespace RslArenaResearch;
+namespace ArenaDrafter;
 
 public sealed record LiveArenaDashboardStats(
     int Battles = 0,

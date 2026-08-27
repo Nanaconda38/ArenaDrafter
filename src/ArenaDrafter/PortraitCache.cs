@@ -7,7 +7,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace RslArenaResearch;
+namespace ArenaDrafter;
 
 public sealed class PortraitCache
 {

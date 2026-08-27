@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\RslArenaResearch\RslArenaResearch.csproj" />
+    <ProjectReference Include="..\..\src\ArenaDrafter\ArenaDrafter.csproj" />
   </ItemGroup>
 
 </Project>

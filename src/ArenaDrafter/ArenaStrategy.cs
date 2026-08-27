@@ -4,7 +4,7 @@ using System.IO;
 using System.Text.Json;
 using System.Windows.Media;
 
-namespace RslArenaResearch;
+namespace ArenaDrafter;
 
 public sealed record ArenaStrategyCandidate(long InstanceId, int TypeId, int BaseId, string Name, ArenaRole Roles, int Priority, int LeaderPriority);
 

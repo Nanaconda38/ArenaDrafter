@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 
-namespace RslArenaResearch;
+namespace ArenaDrafter;
 
 public static class Log
 {

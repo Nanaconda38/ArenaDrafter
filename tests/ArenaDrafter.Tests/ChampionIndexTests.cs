@@ -1,4 +1,4 @@
-using RslArenaResearch;
+using ArenaDrafter;
 using System.IO;
 using System.IO.Pipes;
 using System.Security.Cryptography;
@@ -7,7 +7,7 @@ using System.Text.Json;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace RslArenaResearch.Tests;
+namespace ArenaDrafter.Tests;
 
 [TestClass]
 public sealed class ChampionIndexTests
@@ -1006,7 +1006,7 @@ public sealed class ChampionIndexTests
     {
         var processId = Random.Shared.Next(100000, int.MaxValue);
         await using var probe = new ProbeClient(processId);
-        using var client = new NamedPipeClientStream(".", $"RslArenaResearch-{processId}", PipeDirection.InOut, PipeOptions.Asynchronous);
+        using var client = new NamedPipeClientStream(".", $"ArenaDrafter-{processId}", PipeDirection.InOut, PipeOptions.Asynchronous);
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var error = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
         var automation = new TaskCompletionSource<AutomationMessage>(TaskCreationOptions.RunContinuationsAsynchronously);

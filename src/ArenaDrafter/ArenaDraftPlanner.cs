@@ -1,7 +1,7 @@
 using System.IO;
 using System.Numerics;
 
-namespace RslArenaResearch;
+namespace ArenaDrafter;
 
 [Flags]
 public enum ArenaRole

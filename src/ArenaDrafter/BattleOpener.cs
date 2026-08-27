@@ -3,7 +3,7 @@ using System.IO;
 using System.Text.Json;
 using System.Windows.Media;
 
-namespace RslArenaResearch;
+namespace ArenaDrafter;
 
 public sealed record BattleTargetChampionOption(int BaseId, string Name);
 

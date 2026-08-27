@@ -1,4 +1,4 @@
-﻿#include <windows.h>
+#include <windows.h>
 #include <bcrypt.h>
 #include <algorithm>
 #include <atomic>
@@ -35,7 +35,7 @@ HANDLE pipeHandle = INVALID_HANDLE_VALUE;
 void nativeLog(const std::string& message) noexcept {
     wchar_t localAppData[MAX_PATH]{};
     if (!GetEnvironmentVariableW(L"LOCALAPPDATA", localAppData, MAX_PATH)) return;
-    const std::wstring root = std::wstring(localAppData) + L"\\RslArenaResearch";
+    const std::wstring root = std::wstring(localAppData) + L"\\ArenaDrafter";
     const std::wstring logs = root + L"\\logs";
     CreateDirectoryW(root.c_str(), nullptr);
     CreateDirectoryW(logs.c_str(), nullptr);
@@ -57,7 +57,7 @@ void nativeLog(const std::string& message) noexcept {
 void recordLiveArena(const std::string& event) {
     wchar_t localAppData[MAX_PATH]{};
     if (!GetEnvironmentVariableW(L"LOCALAPPDATA", localAppData, MAX_PATH)) throw std::runtime_error("LOCALAPPDATA is unavailable.");
-    const std::wstring root = std::wstring(localAppData) + L"\\RslArenaResearch";
+    const std::wstring root = std::wstring(localAppData) + L"\\ArenaDrafter";
     const std::wstring logs = root + L"\\logs";
     if (!CreateDirectoryW(root.c_str(), nullptr) && GetLastError() != ERROR_ALREADY_EXISTS)
         throw std::runtime_error("The research log directory could not be created.");
@@ -2236,7 +2236,7 @@ std::string contentHash(const std::string& json) {
 }
 
 void connectPipe() {
-    const std::wstring path = L"\\\\.\\pipe\\RslArenaResearch-" + std::to_wstring(GetCurrentProcessId());
+    const std::wstring path = L"\\\\.\\pipe\\ArenaDrafter-" + std::to_wstring(GetCurrentProcessId());
     nativeLog("Connecting to the current-user named pipe.");
     for (int attempt = 0; attempt < 100 && !stopping; ++attempt) {
         pipeHandle = CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);

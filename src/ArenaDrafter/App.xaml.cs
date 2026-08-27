@@ -1,8 +1,8 @@
-﻿using System.Configuration;
+using System.Configuration;
 using System.Data;
 using System.Windows;
 
-namespace RslArenaResearch;
+namespace ArenaDrafter;
 
 /// <summary>
 /// Interaction logic for App.xaml

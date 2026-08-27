@@ -2,7 +2,7 @@ using System.IO;
 using System.Reflection;
 using System.Text.Json;
 
-namespace RslArenaResearch;
+namespace ArenaDrafter;
 
 public sealed record HellHadesArenaForm(int Form, int ArenaRating, ArenaRole Roles);
 
@@ -20,7 +20,7 @@ public sealed record HellHadesCatalogCompatibility(int Matched, int Missing, int
 
 public sealed class HellHadesArenaCatalog
 {
-    private const string ResourceName = "RslArenaResearch.Data.hellhades-arena-catalog.json";
+    private const string ResourceName = "ArenaDrafter.Data.hellhades-arena-catalog.json";
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
     private readonly IReadOnlyDictionary<int, HellHadesArenaChampion> champions;
 

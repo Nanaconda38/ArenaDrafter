@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace RslArenaResearch;
+namespace ArenaDrafter;
 
 public sealed record ChampionInstance(
     long Id,

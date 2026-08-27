@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Data\hellhades-arena-catalog.json" LogicalName="RslArenaResearch.Data.hellhades-arena-catalog.json" />
+    <EmbeddedResource Include="Data\hellhades-arena-catalog.json" LogicalName="ArenaDrafter.Data.hellhades-arena-catalog.json" />
   </ItemGroup>
 
   <Target Name="BuildNativeProbe" BeforeTargets="Build" Condition="'$(DesignTimeBuild)' != 'true'">

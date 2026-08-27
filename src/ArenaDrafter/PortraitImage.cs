@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 
-namespace RslArenaResearch;
+namespace ArenaDrafter;
 
 public sealed class PortraitImage : FrameworkElement
 {
