@@ -704,6 +704,14 @@ ArenaDraftRosterGrid.ItemsSource = arenaPool;
             Log.Info($"System dark title bar is unavailable: {exception.Message}");
         }
         ApplyLiveArenaLayout();
+        if (CrashSession.PreviousCrashDetected)
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                if (MessageBox.Show(this, "ArenaDrafter did not close normally last time. Create a diagnostic report?", "ArenaDrafter", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                    ShowBugReporter(true);
+            });
+        }
     }
 
     private void CloseDeveloperTools_Click(object sender, RoutedEventArgs e)
@@ -3926,6 +3934,40 @@ ArenaDraftRosterGrid.ItemsSource = arenaPool;
 
     private void OpenLogs_Click(object sender, RoutedEventArgs e) => Log.OpenDirectory();
 
+    private void ReportBug_Click(object sender, RoutedEventArgs e) => ShowBugReporter(false);
+
+    private void ShowBugReporter(bool previousCrashDetected)
+    {
+        var dialog = new BugReportWindow(previousCrashDetected) { Owner = this };
+        if (dialog.ShowDialog() != true) return;
+        try
+        {
+            var context = new Dictionary<string, string>
+            {
+                ["connectionStatus"] = StatusText.Text,
+                ["connected"] = (probe is not null).ToString(),
+                ["automationMode"] = arenaMode.ToString(),
+                ["continuousSession"] = continuousArenaSession.ToString(),
+                ["sessionBattles"] = $"{arenaSessionBattlesCompleted}/{arenaSessionBattleLimit}",
+                ["sessionResults"] = $"wins={arenaSessionWins}; losses={arenaSessionLosses}; unknown={arenaSessionUnknownResults}",
+                ["battleActive"] = battleActive.ToString(),
+                ["battleTurn"] = lastBattleTurn.ToString(CultureInfo.InvariantCulture),
+                ["liveArenaPhase"] = lastLiveArena?.Draft.Phase ?? "unavailable",
+                ["screen"] = $"{SystemParameters.PrimaryScreenWidth:0}x{SystemParameters.PrimaryScreenHeight:0} DIP; {VisualTreeHelper.GetDpi(this).PixelsPerDip:0.##} scale"
+            };
+            var report = DiagnosticReport.Create(new(
+                dialog.Area, dialog.Summary, dialog.Expected, dialog.Actual, dialog.Steps,
+                dialog.IncludeConfiguration, connectedRaidProcessId, context));
+            MessageBox.Show(this, $"Diagnostic report created:\n{report.ZipPath}\n\nThe ZIP was not uploaded automatically. Review it before sharing.", "ArenaDrafter", MessageBoxButton.OK, MessageBoxImage.Information);
+            DiagnosticReport.OpenForSubmission(report, dialog.Summary);
+        }
+        catch (Exception exception)
+        {
+            Log.Error("Diagnostic report creation failed.", exception);
+            ShowError($"The diagnostic report could not be created: {exception.Message}");
+        }
+    }
+
     private async Task ResetProbeAsync()
     {
         if (probe is not null)
@@ -3989,6 +4031,8 @@ ArenaDraftRosterGrid.ItemsSource = arenaPool;
         }
         battleDiagnostics.Dispose();
         rewardDiagnostics.Dispose();
+        mythicalClickTrace.Dispose();
+        CrashSession.MarkCleanExit();
         Close();
     }
 }

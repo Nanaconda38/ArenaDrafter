@@ -8,11 +8,17 @@ namespace ArenaDrafter;
 public static class Log
 {
     private static readonly object Sync = new();
+    public static readonly string SessionId = Guid.NewGuid().ToString("N");
     public static readonly string DirectoryPath = Path.Combine(AppPaths.Data, "logs");
     public static readonly string FilePath = Path.Combine(DirectoryPath, $"app-{DateTime.UtcNow:yyyyMMdd}.log");
+    public static string? LastError { get; private set; }
 
     public static void Info(string message) => Write("INFO", message);
-    public static void Error(string message, Exception? exception = null) => Write("ERROR", exception is null ? message : $"{message} | {exception}");
+    public static void Error(string message, Exception? exception = null)
+    {
+        LastError = exception is null ? message : $"{message} | {exception.GetType().Name}: {exception.Message}";
+        Write("ERROR", exception is null ? message : $"{message} | {exception}");
+    }
 
     private static void Write(string level, string message)
     {
@@ -21,7 +27,7 @@ public static class Log
             lock (Sync)
             {
                 Directory.CreateDirectory(DirectoryPath);
-                File.AppendAllText(FilePath, $"{DateTime.UtcNow:O} [{level}] [PID {Environment.ProcessId}] [TID {Environment.CurrentManagedThreadId}] {message}{Environment.NewLine}");
+                File.AppendAllText(FilePath, $"{DateTime.UtcNow:O} [{level}] [SID {SessionId}] [PID {Environment.ProcessId}] [TID {Environment.CurrentManagedThreadId}] {message}{Environment.NewLine}");
             }
         }
         catch { }

@@ -42,6 +42,7 @@ Source: "{#PublishDir}\RslArenaProbe.dll"; DestDir: "{app}"; Flags: ignoreversio
 Name: "{localappdata}\ArenaDrafter"; Flags: uninsneveruninstall
 Name: "{localappdata}\ArenaDrafter\cache"; Flags: uninsneveruninstall
 Name: "{localappdata}\ArenaDrafter\logs"; Flags: uninsneveruninstall
+Name: "{localappdata}\ArenaDrafter\reports"; Flags: uninsneveruninstall
 
 [Icons]
 Name: "{autoprograms}\{#AppName}"; Filename: "{app}\ArenaDrafter.exe"; WorkingDir: "{app}"

@@ -359,6 +359,7 @@
                     <Button Content="Launch RAID" Click="LaunchRaid_Click" Padding="12,7" Margin="0,0,7,0"/>
                     <Button x:Name="ConnectButton" Style="{StaticResource PrimaryButton}" Content="Connect" Click="Connect_Click" Padding="14,7" Margin="0,0,7,0"/>
                     <Button x:Name="RefreshButton" Content="Refresh" Click="Refresh_Click" IsEnabled="False" Padding="12,7" Margin="0,0,7,0"/>
+                    <Button Content="Report a bug" Click="ReportBug_Click" Padding="11,7" Margin="0,0,7,0" ToolTip="Create a sanitized diagnostic report for the beta team"/>
                     <Button x:Name="DeveloperToolsButton" Content="Developer tools" Click="OpenDeveloperTools_Click" Padding="11,7" ToolTip="Open connection, diagnostics, traces, and logs"/>
                 </StackPanel>
             </Grid>

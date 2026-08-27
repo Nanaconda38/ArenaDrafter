@@ -1,0 +1,36 @@
+name: Beta bug report
+description: Report an ArenaDrafter beta problem with a diagnostic ZIP.
+title: "[Beta bug] "
+labels: ["bug", "beta"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Connection
+        - Draft
+        - Ban
+        - Leader
+        - Battle Opener
+        - Rewards / refill
+        - Session
+        - Crash
+        - User interface
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Include what you expected and the steps to reproduce it.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostic ZIP
+      description: Drag the ZIP created by ArenaDrafter here. Review it first and do not publish it if this repository is public.
+    validations:
+      required: true
