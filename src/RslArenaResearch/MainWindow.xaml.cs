@@ -3912,7 +3912,7 @@ ArenaDraftRosterGrid.ItemsSource = arenaPool;
     private void ShowError(string message, string? status = null)
     {
         StatusText.Text = status ?? message;
-        MessageBox.Show(this, message, "RSL Arena Research", MessageBoxButton.OK, MessageBoxImage.Error);
+        MessageBox.Show(this, message, "ArenaDrafter", MessageBoxButton.OK, MessageBoxImage.Error);
     }
 
     private async void OnProbeError(string message)

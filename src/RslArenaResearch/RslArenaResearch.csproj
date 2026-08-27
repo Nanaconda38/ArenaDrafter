@@ -8,6 +8,8 @@
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <BaseOutputPath>artifacts\current\</BaseOutputPath>
+    <AssemblyName>ArenaDrafter</AssemblyName>
+    <Version>0.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

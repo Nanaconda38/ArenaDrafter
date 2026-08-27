@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RslArenaResearch"
         mc:Ignorable="d"
-        Title="RSL Arena Research" Height="920" Width="1460" MinHeight="720" MinWidth="1180"
+        Title="ArenaDrafter" Height="920" Width="1460" MinHeight="720" MinWidth="1180"
         Background="#0A0F14" Foreground="#F0EBDD" FontFamily="Segoe UI Variable Text" FontSize="14" Loaded="Window_Loaded" Closing="Window_Closing">
     <Window.Resources>
         <!-- Arena Strategy Board palette: matte surfaces, tactical gold, restrained confirmation teal. -->
@@ -345,7 +345,7 @@
                         <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Bahnschrift SemiCondensed" FontSize="18" FontWeight="Bold" Foreground="{StaticResource GoldBrush}" Text="R"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock FontFamily="Bahnschrift SemiCondensed" FontSize="20" FontWeight="SemiBold" Text="RSL Arena Research"/>
+                        <TextBlock FontFamily="Bahnschrift SemiCondensed" FontSize="20" FontWeight="SemiBold" Text="ArenaDrafter"/>
                         <TextBlock Foreground="{StaticResource MutedBrush}" FontSize="10" Text="TACTICAL RESEARCH CONSOLE"/>
                     </StackPanel>
                 </StackPanel>
