@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.20)
+project(RslArenaProbe LANGUAGES CXX)
+
+add_library(RslArenaProbe SHARED probe.cpp)
+target_compile_features(RslArenaProbe PRIVATE cxx_std_17)
+target_compile_definitions(RslArenaProbe PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX UNICODE _UNICODE)
+target_compile_options(RslArenaProbe PRIVATE -Wall -Wextra -Wpedantic -Wno-cast-function-type -O2)
+target_link_options(RslArenaProbe PRIVATE -static -static-libgcc -static-libstdc++)
+target_link_libraries(RslArenaProbe PRIVATE bcrypt)
+set_target_properties(RslArenaProbe PROPERTIES PREFIX "" OUTPUT_NAME "RslArenaProbe")

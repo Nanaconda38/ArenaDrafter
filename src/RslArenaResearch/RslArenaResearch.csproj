@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <BaseOutputPath>artifacts\current\</BaseOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AssetsTools.NET" Version="3.0.5" />
+    <PackageReference Include="AssetsTools.NET.Texture" Version="3.0.2" />
+    <PackageReference Include="System.IO.Pipes.AccessControl" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\hellhades-arena-catalog.json" LogicalName="RslArenaResearch.Data.hellhades-arena-catalog.json" />
+  </ItemGroup>
+
+  <Target Name="BuildNativeProbe" BeforeTargets="Build" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Exec Command="cmake -S &quot;$(MSBuildProjectDirectory)\..\..\native\RslArenaProbe&quot; -B &quot;$(MSBuildProjectDirectory)\..\..\native\RslArenaProbe\build&quot; -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++" />
+    <Exec Command="cmake --build &quot;$(MSBuildProjectDirectory)\..\..\native\RslArenaProbe\build&quot;" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\native\RslArenaProbe\build\RslArenaProbe.dll" DestinationFolder="$(OutDir)" />
+  </Target>
+
+</Project>
