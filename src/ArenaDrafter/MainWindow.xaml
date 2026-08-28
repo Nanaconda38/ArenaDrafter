@@ -911,6 +911,19 @@
                                         <TextBlock VerticalAlignment="Center" Foreground="{StaticResource GoldBrush}" FontWeight="SemiBold" Text="PRESET LINEUP"/>
                                     </StackPanel>
                                 </Border>
+                                <Border x:Name="ArenaProfilePanel" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="6" Padding="6" Margin="0,0,8,0">
+                                    <WrapPanel VerticalAlignment="Center">
+                                        <TextBlock Foreground="{StaticResource MutedBrush}" FontSize="11" FontWeight="Bold" Text="PROFILE" Margin="3,0,7,0" VerticalAlignment="Center"/>
+                                        <ComboBox x:Name="ArenaProfileBox" Width="170" DisplayMemberPath="Name" SelectionChanged="ProfileSelector_SelectionChanged" ToolTip="Active named Live Arena profile"/>
+                                        <Button x:Name="ArenaNewProfileButton" Content="New" Click="NewProfile_Click" Margin="4,0,0,0" Padding="8,4" ToolTip="Create a new empty profile"/>
+                                        <Button x:Name="ArenaDuplicateProfileButton" Content="Duplicate" Click="DuplicateProfile_Click" Margin="3,0,0,0" Padding="8,4" ToolTip="Duplicate the active profile"/>
+                                        <Button x:Name="ArenaRenameProfileButton" Content="Rename" Click="RenameProfile_Click" Margin="3,0,0,0" Padding="8,4" ToolTip="Rename the active profile"/>
+                                        <Button x:Name="ArenaDeleteProfileButton" Content="Delete" Click="DeleteProfile_Click" Margin="3,0,0,0" Padding="8,4" ToolTip="Delete the active profile"/>
+                                        <Button x:Name="ArenaImportProfileButton" Content="Import" Click="ImportProfile_Click" Margin="8,0,0,0" Padding="8,4" ToolTip="Import one .arenadraft.json profile package"/>
+                                        <Button x:Name="ArenaExportProfileButton" Content="Export" Click="ExportProfile_Click" Margin="3,0,0,0" Padding="8,4" ToolTip="Export only the active profile"/>
+                                        <Button x:Name="ArenaRestoreProfileButton" Content="Restore previous" Click="RestoreProfile_Click" Margin="3,0,0,0" Padding="8,4" ToolTip="Restore the last valid profile store version"/>
+                                    </WrapPanel>
+                                </Border>
                                 <Border x:Name="ArenaBoardSessionChip" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="6" Padding="10,7" Margin="0,0,8,0">
                                     <StackPanel Orientation="Horizontal"><Ellipse Width="7" Height="7" Fill="{StaticResource CyanBrush}" Margin="0,0,7,0"/><TextBlock x:Name="ArenaBoardHeaderSessionStateText" Foreground="{StaticResource MutedBrush}" FontWeight="SemiBold" Text="OFFLINE"/></StackPanel>
                                 </Border>

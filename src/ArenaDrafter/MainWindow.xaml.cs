@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.Windows.Interop;
 using System.Runtime.InteropServices;
+using Microsoft.Win32;
 
 namespace ArenaDrafter;
 
@@ -66,6 +67,8 @@ public partial class MainWindow : Window
     private int lastActiveHeroId;
     private LiveArenaSnapshotMessage? lastLiveArena;
     private ArenaStrategyFile arenaStrategy = new(ArenaStrategyFile.CurrentVersion, [], [], ArenaDraftMode.PresetLineup, ArenaStrategyFile.EmptyPresetLineup(), []);
+    private ArenaProfileStore? profileStore;
+    private bool profileSelectorChanging;
     private ArenaDraftMode arenaDraftMode = ArenaDraftMode.PresetLineup;
     private LiveArenaAutomationMode arenaMode;
     private string? lastArenaDecisionKey;
@@ -251,22 +254,18 @@ ArenaDraftRosterGrid.ItemsSource = arenaPool;
         ArenaOpenerChampionBox.ItemsSource = battleOpenerChampionView;
         try
         {
-            arenaStrategy = ArenaStrategyFile.Load();
-            arenaDraftMode = ArenaDraftMode.PresetLineup;
-            foreach (var baseId in arenaStrategy.BanPriority)
-                arenaBanPriority.Add(new(baseId, "Unavailable champion"));
-            RebuildPickRules();
+            profileStore = ArenaProfileStore.Load(false);
+            ApplyActiveProfile(profileStore.ActiveProfile, resetTransientState: false);
+            InitializeProfileSelector();
+            if (!string.IsNullOrWhiteSpace(profileStore.RecoveryNotice))
+                ArenaStrategyStatusText.Text = profileStore.RecoveryNotice;
+            else if (profileStore.WasMigrated)
+                ArenaStrategyStatusText.Text = "Default profile created from the previous Live Arena configuration.";
         }
         catch (Exception exception)
         {
-            Log.Error("Live Arena strategy could not be loaded.", exception);
-            ArenaStrategyStatusText.Text = $"Strategy not loaded: {exception.Message}";
-        }
-        try { battleOpener = BattleOpenerFile.Load(); }
-        catch (Exception exception)
-        {
-            Log.Error("Live Arena opener could not be loaded.", exception);
-            ArenaOpenerStatusText.Text = $"Opener not loaded: {exception.Message}";
+            Log.Error("Live Arena profiles could not be loaded.", exception);
+            ArenaStrategyStatusText.Text = $"Profiles not loaded: {exception.Message}";
         }
         try { arenaDashboard = LiveArenaDashboardFile.Load(); }
         catch (Exception exception)
@@ -291,6 +290,94 @@ ArenaDraftRosterGrid.ItemsSource = arenaPool;
         if (sender is FrameworkElement { Tag: string value } &&
             int.TryParse(value, out var index) && index >= 0 && index < ArenaTabs.Items.Count)
             ArenaTabs.SelectedIndex = index;
+    }
+
+    private void InitializeProfileSelector()
+    {
+        if (profileStore is null) return;
+        profileSelectorChanging = true;
+        ArenaProfileBox.ItemsSource = profileStore.Profiles;
+        ArenaProfileBox.DisplayMemberPath = nameof(ArenaProfile.Name);
+        ArenaProfileBox.SelectedValuePath = nameof(ArenaProfile.Id);
+        ArenaProfileBox.SelectedValue = profileStore.ActiveProfileId;
+        profileSelectorChanging = false;
+        UpdateProfileUi();
+    }
+
+    private void ApplyActiveProfile(ArenaProfile profile, bool resetTransientState)
+    {
+        arenaStrategy = profile.Strategy;
+        arenaDraftMode = ArenaDraftMode.PresetLineup;
+        battleOpener = profile.Opener;
+        leaderPriorityReviewed = arenaStrategy.LeaderPriorityReviewed;
+        RebuildArenaPool(); RebuildPresetLineup(); RebuildPickRules(); RebuildBanPriorities(); RebuildLeaderPriorities(true);
+        if (resetTransientState) { undoArenaStrategy = null; draftSimulator = null; draftSimulationResolved = false; hudDecisionKey = null; hudDecision = null; battleOpenerSteps.Clear(); battleOpenerProgress.Clear(); pendingArenaDecision = null; pendingArenaSessionDecision = null; deferredLiveArenaReturnAttempts = 0; deferredLiveArenaReturnRetryPending = false; rewardBatchInProgress = false; lastArenaDecisionKey = null; pendingBattleActionId = 0; battleAutoRecoveryRequired = false; battleAutoRetryCount = 0; ResetBattleOpenerGuards(); battleSkillStabilizationPending = false; battleOpenerInitialized = false; }
+        UpdateDraftModeUi(); UpdateArenaModeUi();
+        ArenaProfileBox.SelectedValue = profile.Id;
+        ArenaStrategyStatusText.Text = $"Profile loaded: {profile.Name}";
+    }
+
+    private bool CanEditProfiles()
+    {
+        if (arenaMode != LiveArenaAutomationMode.Off) { ArenaStrategyStatusText.Text = "Stop Live Arena automation before changing profiles."; return false; }
+        return profileStore is not null;
+    }
+
+    private void ProfileSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (profileSelectorChanging || profileStore is null || ArenaProfileBox.SelectedValue is not Guid id || id == profileStore.ActiveProfileId) return;
+        try { if (!CanEditProfiles()) return; SaveActiveProfile(); profileStore.SetActive(id); ApplyActiveProfile(profileStore.ActiveProfile, true); InitializeProfileSelector(); }
+        catch (Exception exception) { Log.Error("Arena profile could not be switched.", exception); ArenaStrategyStatusText.Text = $"Profile switch failed: {exception.Message}"; InitializeProfileSelector(); }
+    }
+
+    private void NewProfile_Click(object sender, RoutedEventArgs e)
+    {
+        if (!CanEditProfiles() || profileStore is null) return;
+        var name = PromptProfileName("New Arena profile", $"Profile {profileStore.Profiles.Count + 1}"); if (name is null) return;
+        try { ApplyActiveProfile(profileStore.Create(name), true); InitializeProfileSelector(); } catch (Exception exception) { ShowError(exception.Message); }
+    }
+    private void DuplicateProfile_Click(object sender, RoutedEventArgs e)
+    {
+        if (!CanEditProfiles() || profileStore is null) return;
+        try { ApplyActiveProfile(profileStore.Duplicate(profileStore.ActiveProfileId), true); InitializeProfileSelector(); } catch (Exception exception) { ShowError(exception.Message); }
+    }
+    private void RenameProfile_Click(object sender, RoutedEventArgs e)
+    {
+        if (!CanEditProfiles() || profileStore is null) return;
+        var name = PromptProfileName("Rename Arena profile", profileStore.ActiveProfile.Name); if (name is null) return;
+        try { profileStore.Rename(profileStore.ActiveProfileId, name); InitializeProfileSelector(); ArenaStrategyStatusText.Text = "Profile renamed and saved."; } catch (Exception exception) { ShowError(exception.Message); }
+    }
+    private void DeleteProfile_Click(object sender, RoutedEventArgs e)
+    {
+        if (!CanEditProfiles() || profileStore is null) return;
+        if (MessageBox.Show($"Delete profile '{profileStore.ActiveProfile.Name}'?", "Delete Arena profile", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+        try { profileStore.Delete(profileStore.ActiveProfileId); ApplyActiveProfile(profileStore.ActiveProfile, true); InitializeProfileSelector(); } catch (Exception exception) { ShowError(exception.Message); }
+    }
+    private void ImportProfile_Click(object sender, RoutedEventArgs e)
+    {
+        if (!CanEditProfiles() || profileStore is null) return;
+        var dialog = new OpenFileDialog { Filter = "Arena profile package (*.arenadraft.json)|*.arenadraft.json|JSON files (*.json)|*.json", CheckFileExists = true }; if (dialog.ShowDialog(this) != true) return;
+        try { if (new FileInfo(dialog.FileName).Length > ArenaProfileStore.MaxImportBytes) throw new InvalidDataException("The Arena profile package exceeds the bounded size limit."); ApplyActiveProfile(profileStore.Import(File.ReadAllText(dialog.FileName)), true); InitializeProfileSelector(); ArenaStrategyStatusText.Text = "Profile imported and saved."; } catch (Exception exception) { ShowError(exception.Message); }
+    }
+    private void ExportProfile_Click(object sender, RoutedEventArgs e)
+    {
+        if (profileStore is null) return;
+        var profile = profileStore.ActiveProfile; var dialog = new SaveFileDialog { Filter = "Arena profile package (*.arenadraft.json)|*.arenadraft.json", FileName = $"{profile.Name}.arenadraft.json", AddExtension = true, OverwritePrompt = true }; if (dialog.ShowDialog(this) != true) return;
+        try { File.WriteAllText(dialog.FileName, profileStore.Export(profile.Id)); ArenaStrategyStatusText.Text = "Profile exported without logs or account data."; } catch (Exception exception) { ShowError(exception.Message); }
+    }
+    private void RestoreProfile_Click(object sender, RoutedEventArgs e)
+    {
+        if (!CanEditProfiles() || profileStore is null) return;
+        try { profileStore.RestorePreviousVersion(); ApplyActiveProfile(profileStore.ActiveProfile, true); InitializeProfileSelector(); ArenaStrategyStatusText.Text = "Previous profile store version restored."; } catch (Exception exception) { ShowError(exception.Message); }
+    }
+    private string? PromptProfileName(string title, string initial)
+    {
+        var dialog = new Window { Title = title, Owner = this, Width = 390, Height = 160, WindowStartupLocation = WindowStartupLocation.CenterOwner, ResizeMode = ResizeMode.NoResize, Background = (Brush)FindResource("CanvasBrush") };
+        var panel = new StackPanel { Margin = new Thickness(14) }; panel.Children.Add(new TextBlock { Text = "Profile name", Foreground = (Brush)FindResource("TextBrush"), Margin = new Thickness(0, 0, 0, 6) });
+        var input = new TextBox { Text = initial, Margin = new Thickness(0, 0, 0, 12) }; panel.Children.Add(input); var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+        buttons.Children.Add(new Button { Content = "Cancel", Padding = new Thickness(12, 5, 12, 5), Margin = new Thickness(0, 0, 7, 0), IsCancel = true }); var accept = new Button { Content = "Save", Padding = new Thickness(12, 5, 12, 5), IsDefault = true };
+        accept.Click += (_, _) => { if (ArenaProfileStore.IsValidName(input.Text)) dialog.DialogResult = true; else MessageBox.Show(dialog, "Use 1 to 50 visible characters.", title, MessageBoxButton.OK, MessageBoxImage.Warning); }; buttons.Children.Add(accept); panel.Children.Add(buttons); dialog.Content = panel;
+        return dialog.ShowDialog() == true ? input.Text.Trim() : null;
     }
 
     private void LaunchRaid_Click(object sender, RoutedEventArgs e)
@@ -2735,7 +2822,7 @@ ArenaDraftRosterGrid.ItemsSource = arenaPool;
             battleOpenerSteps.Select(step => step.TypeId).ToList(),
             battleOpenerSteps.Select(step => step.TargetBaseId).ToList()));
         battleOpener = new(BattleOpenerFile.CurrentVersion, configurations.OrderBy(item => item.BaseId).ToList());
-        battleOpener.Save();
+        SaveActiveProfile();
         ArenaOpenerStatusText.Text = status + " Saved automatically.";
     }
 
@@ -3100,9 +3187,7 @@ ArenaDraftRosterGrid.ItemsSource = arenaPool;
                 if (mythicalClickTrace.IsRecording)
                     throw new InvalidOperationException("Stop the Mythical click-path trace before starting Live Arena automation.");
                 arenaStrategy = CaptureArenaStrategy(true);
-                arenaStrategy.Save();
-                battleOpener.Validate();
-                battleOpener.Save();
+                SaveActiveProfile();
                 if (probe is null) throw new InvalidOperationException("Connect RAID before starting Live Arena strategy.");
             }
             if (mode == LiveArenaAutomationMode.Armed && continuous)
@@ -3209,7 +3294,7 @@ ArenaDraftRosterGrid.ItemsSource = arenaPool;
         {
             ArenaAutosaveText.Text = "Savingâ€¦";
             arenaStrategy = CaptureArenaStrategy(false);
-            arenaStrategy.Save();
+            SaveActiveProfile();
             hudDecisionKey = null;
             hudDecision = null;
             ArenaAutosaveText.Text = "Saved";
@@ -3237,7 +3322,7 @@ ArenaDraftRosterGrid.ItemsSource = arenaPool;
         RebuildPickRules();
         RebuildBanPriorities();
         RebuildLeaderPriorities(true);
-        arenaStrategy.Save();
+        SaveActiveProfile();
         ArenaUndoButton.IsEnabled = false;
         ArenaUndoButton.Visibility = Visibility.Collapsed;
         ArenaBoardUndoButton.IsEnabled = false;
@@ -3550,6 +3635,7 @@ ArenaDraftRosterGrid.ItemsSource = arenaPool;
             arenaSessionEndedAt = DateTime.UtcNow;
         if (!continuousArenaSession) FinalizeArenaDashboardRun();
         UpdateDraftModeUi();
+        UpdateProfileUi();
         ApplyLiveArenaLayout();
         var connected = probe is not null;
         var automationActive = arenaMode != LiveArenaAutomationMode.Off;
@@ -3759,6 +3845,22 @@ ArenaDraftRosterGrid.ItemsSource = arenaPool;
         ArenaBoardPresetList.IsHitTestVisible = !adaptive && arenaMode == LiveArenaAutomationMode.Off;
         ArenaDraftRosterEmptyState.Visibility = adaptive && arenaPool.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         ArenaBoardPresetCount.Text = $"{presetLineupSlots.Count(slot => slot.HasPrimary)} / 5 CONFIGURED";
+    }
+
+    private void UpdateProfileUi()
+    {
+        if (!IsInitialized) return;
+        var editable = profileStore is not null && arenaMode == LiveArenaAutomationMode.Off;
+        ArenaProfileBox.IsEnabled = editable; ArenaNewProfileButton.IsEnabled = editable; ArenaDuplicateProfileButton.IsEnabled = editable;
+        ArenaRenameProfileButton.IsEnabled = editable; ArenaDeleteProfileButton.IsEnabled = editable && profileStore?.Profiles.Count > 1;
+        ArenaImportProfileButton.IsEnabled = editable; ArenaExportProfileButton.IsEnabled = profileStore is not null;
+        ArenaRestoreProfileButton.IsEnabled = editable && profileStore is not null && File.Exists(profileStore.BackupPath);
+    }
+
+    private void SaveActiveProfile()
+    {
+        if (profileStore is not null) { profileStore.UpdateActive(arenaStrategy, battleOpener); return; }
+        arenaStrategy.Save(); battleOpener.Save();
     }
 
     private void CancelArenaAutomation_Click(object sender, RoutedEventArgs e)

@@ -12,6 +12,7 @@ namespace ArenaDrafter;
 public static class AppPaths
 {
     public static readonly string Data = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ArenaDrafter");
+    public static readonly string LegacyData = Data;
     public static readonly string RaidRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PlariumPlay", "StandAloneApps", "raid-shadow-legends");
     public static readonly string Build = Path.Combine(RaidRoot, "build");
     public static readonly string RaidExe = Path.Combine(Build, "Raid.exe");

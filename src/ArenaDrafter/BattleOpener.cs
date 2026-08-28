@@ -86,16 +86,25 @@ public sealed record BattleOpenerFile(int Version, List<BattleOpenerChampion> Ch
     {
         Directory.CreateDirectory(AppPaths.Data);
         if (!File.Exists(Path)) return new(CurrentVersion, []);
-        var value = JsonSerializer.Deserialize<BattleOpenerFile>(File.ReadAllText(Path))
-            ?? throw new InvalidDataException("The Live Arena opener file is empty.");
-        value.Validate(true);
-        var migrated = value with
-        {
-            Champions = value.Champions.Where(champion => champion.SkillTypeIds is not null).ToList()
-        };
-        migrated.Validate();
+        var value = Parse(File.ReadAllText(Path), out var migrated);
         if (migrated.Champions.Count != value.Champions.Count) migrated.Save();
         return migrated;
+    }
+
+    public static BattleOpenerFile Parse(string json)
+    {
+        Parse(json, out var migrated);
+        return migrated;
+    }
+
+    private static BattleOpenerFile Parse(string json, out BattleOpenerFile migrated)
+    {
+        var value = JsonSerializer.Deserialize<BattleOpenerFile>(json)
+            ?? throw new InvalidDataException("The Live Arena opener file is empty.");
+        value.Validate(true);
+        migrated = value with { Champions = value.Champions.Where(champion => champion.SkillTypeIds is not null).ToList() };
+        migrated.Validate();
+        return value;
     }
 
     public void Save()
